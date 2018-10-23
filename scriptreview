@@ -53,7 +53,6 @@ def curses_main():
         # Terminating a curses application is much easier than
         # starting one.  You'll need to call
         curses.nocbreak(); stdscr.keypad(0); curses.echo()
-        
         # to reverse the curses-friendly terminal settings.
         # Then call the endwin() function to restore the
         # terminal to its original operating mode.
@@ -70,6 +69,8 @@ def splash(win):
     key bindings:
 
         h       show this help splash
+        space   show next command and result
+        b       show previous command and result
         g       goto top   
         G       goto bottom   
         up      prev prompt
