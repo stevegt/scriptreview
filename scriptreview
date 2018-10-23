@@ -64,20 +64,24 @@ def curses_main():
         traceback.print_exc()
         sys.exit(1)
 
-def splash():
-    print '''
+def splash(win):
+    # XXX use curses
+    msg = '''
     key bindings:
 
         h       show this help splash
         g       goto top   
         G       goto bottom   
-        down    next prompt
         up      prev prompt
+        down    next prompt
         /       search forward
         n       next search result
         q       quit
 
     '''
+    win.clear()
+    win.refresh()
+    win.addstr(0,0,msg)
 
 def ask(win,prompt,default=None):
     (maxy, maxx) = win.getmaxyx()
@@ -95,11 +99,19 @@ def ask(win,prompt,default=None):
     win.addstr(row, 0, ' ' * (maxx-1))
     return response
 
+def show(txt):
+    print txt,
+    # control characters in txt may mess us up, so...
+    # ...flush input buffer
+    curses.flushinp()
+    # ...return to default curses mode 
+    curses.reset_prog_mode()
+
 def main(stdscr):
     prompt = sys.argv[1]
     fn = sys.argv[2]
 
-    splash()
+    splash(stdscr)
 
     fh = open(fn, 'rb')
 
@@ -149,7 +161,8 @@ def main(stdscr):
         elif c == ord('g'):
             i = 0
         elif c == ord('h'):
-            splash()
+            show_res = False
+            splash(stdscr)
         elif c == ord('G'):
             prompt_only = True
             fast_forward = True
@@ -167,20 +180,20 @@ def main(stdscr):
             prompt_only = False
             i += 1
 
-        if prompt_only or len(find):
-            continue
+if __name__ == '__main__':
+    if len(sys.argv) < 3:
+        print >>sys.stderr, """usage: scriptreview {prompt_string} {typescript_filename}
 
-        while True:
-            pos = fh.tell()
-            if i < len(prompts) and pos >= prompts[i]:
-                break
-            line = fh.readline()
-            if len(find):
-                if not line.count(find):
-                    continue
-            if not len(line):
-                break
-            print line,
+        Example:
 
-curses_main()
+            alice@mars $ script
+            Script started, file is typescript
+            [ ...do some things... ]
+            alice@mars $ exit
+            Script done, file is typescript
+            alice@mars $ scriptreview alice@mars typescript
+            """
+        sys.exit(1)
+
+    curses_main()
 
