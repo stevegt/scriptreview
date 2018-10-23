@@ -43,7 +43,8 @@ def curses_main():
         # have to enable keypad mode.
         stdscr.keypad(1)
         
-        # XXX what's this do?
+        # turn off newline -> cr translation
+        # XXX do we really need this?
         curses.nonl()
         
         # run the app
@@ -65,7 +66,6 @@ def curses_main():
         sys.exit(1)
 
 def splash(win):
-    # XXX use curses
     msg = '''
     key bindings:
 
