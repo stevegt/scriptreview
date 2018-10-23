@@ -127,57 +127,83 @@ def main(stdscr):
 
 
     find = ''
-    prompt_only = False
+    show_res = False
     fast_forward = False
     i = 0
+    # save current mode as default curses mode
+    curses.def_prog_mode()
     while True:
         i = max(i,0)
         i = min(i,len(prompts)-1)
         pos = prompts[i]
         fh.seek(pos)
-        line = fh.readline()
-        print line,
-
-        if fast_forward:
-            i += 1
-            if i >= len(prompts)-1:
-                fast_forward = False
-            continue
+        cmd = fh.readline()
+        if i < len(prompts)-1:
+            # read to next prompt
+            res = fh.read(prompts[i+1] - fh.tell())
+        else:
+            # read to end of file
+            fast_forward = False
+            find = ''
+            res = fh.read()
 
         if len(find):
             i += 1
-            if not line.count(find):
+            if not cmd.count(find) and not res.count(find):
                 continue
+            if res.count(find):
+                show_res = True
+
+        show(cmd)
+        if show_res:
+            show(res)
+
+        if fast_forward:
+            i += 1
+            continue
 
         c = stdscr.getch()
         if c == ord('b'):
-            prompt_only = False
+            find = ''
+            show_res = True
+            stdscr.clear()
+            stdscr.refresh()
+            # show("=== rewind ===\n")
             i -= 1
         elif c == ord('/'):
             find = ask(stdscr, 'search for')
+            show_res = False
             i += 1
         elif c == ord('n'):
+            show_res = False
             i += 1
         elif c == ord('g'):
+            find = ''
+            show_res = False
             i = 0
         elif c == ord('h'):
             show_res = False
             splash(stdscr)
         elif c == ord('G'):
-            prompt_only = True
+            find = ''
+            show_res = False
             fast_forward = True
             i += 1
         elif c == ord('q'):
             return
         elif c == curses.KEY_DOWN:
-            prompt_only = True
+            find = ''
+            show_res = False
             i += 1
         elif c == curses.KEY_UP:
-            prompt_only = True
+            find = ''
+            show_res = False
             i -= 1
         else:
             find = ''
-            prompt_only = False
+            if not show_res:
+                show(res)
+            show_res = True
             i += 1
 
 if __name__ == '__main__':
